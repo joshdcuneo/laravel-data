@@ -137,6 +137,35 @@ it(
     }
 );
 
+
+it(
+    'can set defaults for the data object when being constructed from a request',
+    function () {
+        class TestDataFromRequestWithDefaults extends Data
+        {
+            public function __construct(
+                public string $name
+            ) {
+            }
+
+            public static function fromRequest(Request $request)
+            {
+                return new self(
+                    $request->input('name', 'Rick Astley')
+                );
+            }
+        }
+
+        Route::post('/other-route', function (\TestDataFromRequestWithDefaults $data) {
+            return ['name' => $data->name];
+        });
+
+        postJson('/other-route')
+            ->assertOk()
+            ->assertJson(['name' => 'Rick Astley']);
+    }
+);
+
 it('can wrap data', function () {
     Route::post('/example-route', function () {
         return SimpleData::from(request()->input('string'))->wrap('data');
